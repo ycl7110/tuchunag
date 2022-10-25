@@ -30,34 +30,35 @@ const router = express.Router()
  *          description: Order not found                  
  * */
 
-router.post('/register', async (req, res) => {
+router.post('/api/register', async (req, res) => {
     const { userName, userPwd } = req.body
     if (userName && userPwd) {
         let isExist = await User.findOne({
-            $or: [{
-                userName
-            }, {
-                userPwd
-            }]
+            userName: userName
         }, '_id userName userPwd')
-        console.log(isExist)
-        if (isExist) {
+
+        // $or: [{
+        //     userName
+        // }, {
+        //     userPwd
+        // }]
+        if (isExist == null) {
             let proxyUser = new User({
                 userName,
                 userPwd,
             })
             proxyUser.save();
-            res.send({ msg: '注册成功' })
+            res.send({ msg: '注册成功', code: 1 })
         } else {
-            res.send({code:401, msg: '检测到已注册用户' })
+            res.send({ code: 0, msg: '检测到已注册用户' }) //201 
         }
     } else {
-        res.send({ msg: '请输入完整数据' })
+        res.send({ msg: '请输入完整数据', code: 0 }) //code==0 返回错误，须要提示msg
     }
 
 })
 //用户登录
-router.post('/login', async (req, res) => {
+router.post('/api/login', async (req, res) => {
     const { userName, userPwd } = req.body
     let data = await User.findOne({
         userName,
@@ -74,9 +75,9 @@ router.post('/login', async (req, res) => {
             userPwd,
             token,
         }
-        res.send({ msg: '登录成功', data: proxy })
+        res.send({ code: 1, msg: '登录成功', data: proxy })
     } else {
-        res.send({ msg: "登陆失败" })
+        res.send({ msg: "登录失败", code: 0 })
     }
 })
 

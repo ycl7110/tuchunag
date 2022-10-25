@@ -1,18 +1,17 @@
 const express = require('express')
+const imgSchema = require('./../models/imgSchema');
 const mkdir = require('./../tool/mkdir'); // 导入自动创建文件夹的方法
 // 创建路由容器
 const router = express.Router()
 const multer = require('multer');
-const { route } = require('./user');
-
 //新建文件夹
 router.post('/addFile', (req, res) => {
     let filename = req.body.fileName
     if (filename) {
         mkdir.mkdirs('../static/img/' + filename,
-         err => {
-            res.send({ msg: '成功' })
-        });
+            err => {
+                res.send({ msg: '成功' })
+            });
     } else {
         res.send({ msg: 'error' })
     }
@@ -23,19 +22,32 @@ var storage = multer.diskStorage({
         // 这里是在server端要放图片的目录
         cb(null, './static/img')
     },
-    // 这里是对文件重命名
     filename: function (req, file, cb) {
         let filename = new Date().getTime() + '.png'
         cb(null, filename)
     }
 })
+
+//用户查询 自己的图片
+router.post('/api/img/list', async (req, res) => {
+    let userid = req.user.data._id
+    let data = await imgSchema.find({
+        userid: userid
+    }, ' url_path userid')
+    console.log(data)
+    res.send({ msg: 'success', code: 1, data: { list: data } })
+})
+
 var upload = multer({ storage: storage })
-//single中的字段要和前端上传的formData的字段一致
 router.post('/upload', upload.single('file'), (req, res) => {
     const { path } = req.file
     let paths = (req.headers.host + '/' + path).replace(/\\/g, '/')
+    let proxy = new imgSchema({
+        userid: req.user.data._id,
+        url_path: paths
+    })
+    proxy.save();
     res.send({ msg: 'success', fileurl: paths })
-    //返回在server端存放的路径
 })
 // 导出
 module.exports = router

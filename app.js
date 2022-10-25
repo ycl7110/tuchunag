@@ -9,8 +9,8 @@ const file = require('./route/file')
 //使用中间件
 // swagger
 // 使用swagger API 文档
-var swaggerInstall = require('./TOOL/swagger')
-swaggerInstall(app)
+// var swaggerInstall = require('./TOOL/swagger')
+// swaggerInstall(app)
 
 require('./config/db')
 app.use(bodyParser.json());
